@@ -72,6 +72,8 @@ def UDP_handler(sock, queue, img_queue, lock, exit_thread, current_member, nbiot
         # Decode the JPEG image
         frame = cv2.imdecode(np.frombuffer(jpeg_data, dtype=np.uint8), cv2.IMREAD_COLOR)
         
+        
+        
         # Face Recognition
         face_names , frame = AI_lib.face_recognition_exe(frame)
         

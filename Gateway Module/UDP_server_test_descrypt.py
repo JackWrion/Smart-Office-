@@ -1,8 +1,10 @@
 import socket
 import os
-from datetime import datetime, timedelta
 import queue
 import threading
+import cv2
+import numpy as np
+
 # Define the server IP address and port
 
 server_ip = "0.0.0.0"
@@ -34,26 +36,24 @@ def UDP_handler(sock):
         try:
             client = queue.get(False)
             data = client[0]
-            addr = client[1]
-
-            dt = datetime.now() + timedelta(minutes=0)
-            dt = dt.strftime("%H:%M:%S")
-
+            
 
             #------ DATA PROCESSING --------#
-            data = data.decode('latin-1')
-            #print(dt,"   Received: ",data, "from ", addr, "\n\n\n")
+            with open("image.bin", 'wb') as binary_file:
+                # Write the binary data to the file
+                binary_file.write(data)
+            
+            
+            data = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
+
             data_len = len(data)
-            data_temp = data[:int(data_len/2)+1]
+            cv2.imshow('Video', data)
+            cv2.waitKey(1)
             
             
             
             
             #----- DATA RESPONDING -------#
-            response = "UDP_" + data_temp + "***\r\n"
-            sock.sendto(response.encode("latin-1"), addr)
-            response =  "{} : UDP Server response to {}\r\n".format(dt,addr)
-            sock.sendto(response.encode("latin-1"), addr)
         except:
             pass
 
