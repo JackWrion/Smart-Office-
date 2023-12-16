@@ -29,12 +29,17 @@
 
 #include "wifi.h"
 #include "camera.h"
+#include "aes.h"
 
 
 
 //#define HOST_IP_ADDR "115.78.92.253"
 #define HOST_IP_ADDR "192.168.82.176"
 #define PORT 9006
+
+// Global key and iv
+uint8_t *key;
+uint8_t *iv;
 
 
 
@@ -102,9 +107,12 @@ static void udp_client_task(void *pvParameters)
             camera_fb_t *pic = esp_camera_fb_get();
             ESP_LOGI(TAG_CAMERA, "Picture taken! Its size was: %zu bytes", pic->len);
 
+            // Encrypt the image
+            uint8_t *img_enc = aes_cbc_encrypt(pic->buf, pic->len, key, iv);
+            int img_enc_len = length_after_pad(pic->len);
 
-
-            int err = sendto(sock, pic->buf, pic->len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+            // Send the encrypted image instead of the original image
+            int err = sendto(sock, img_enc, img_enc_len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
 			if (err < 0) {
 				ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
 				break;
@@ -130,6 +138,28 @@ static void udp_client_task(void *pvParameters)
 
 void app_main(void)
 {
+
+    // Init key and IV
+    rand_init();
+    uint8_t* key = random_block(16);
+    uint8_t* iv = random_block(16);
+
+    // Write the key and iv to secret.py Python file
+    FILE *fptr;
+    // Open a file in writing mode
+    fptr = fopen("./../../Gateway Module/secret.py", "w");
+    // Write key
+    fprintf(fptr, "key = bytes.fromhex('");
+    for (int i = 0; i < 16; i++) 
+        fprintf(fptr, "%02x", key[i]);
+    fprintf(fptr, "')\n");
+    // Write iv
+    fprintf(fptr, "iv = bytes.fromhex('");
+    for (int i = 0; i < 16; i++) 
+        fprintf(fptr, "%02x", iv[i]);
+    fprintf(fptr, "')\n");
+    fclose(fptr);
+
 	wifi_connect("Vjppro", "1111.1111");
 	while (!WIFI_FLAG){
 		vTaskDelay(pdMS_TO_TICKS(1000));
