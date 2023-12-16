@@ -395,7 +395,7 @@ void aes_inv_main(uint8_t *state, uint8_t *expanded_key, int no_round) {
 
 
 // Main function
-char aes_encrypt(uint8_t *pt, uint8_t *ct, uint8_t *key, enum keySize size)
+char aes_encrypt_user(uint8_t *pt, uint8_t *ct, uint8_t *key, enum keySize size)
 {
     // the expanded key size
     int expandedKeySize;
@@ -465,7 +465,7 @@ char aes_encrypt(uint8_t *pt, uint8_t *ct, uint8_t *key, enum keySize size)
 }
 
 // Main function for AES decryption
-char aes_decrypt(uint8_t *ct, uint8_t *pt, uint8_t *key, enum keySize size) {
+char aes_decrypt_user(uint8_t *ct, uint8_t *pt, uint8_t *key, enum keySize size) {
     
     // the expanded key size
     int expandedKeySize;
@@ -550,15 +550,20 @@ void print_block(uint8_t *block, int block_len) {
     for (int i = 0; i < block_len; i++)
     {
         // Print characters in HEX format, 16 chars per line
-        printf("%2.2x\0", block[i]);
+        printf("%2.2x%c", block[i],'\0');
     }
     printf("\n");
 }
 
 int calc_pad_ammount_aes128(int data_len) {
-    for (int i = 0; i < 16; i++)
-        if ((data_len + i) % 16 == 0)
-            return (i == 0) ? 16 : i;
+    for (int i = 0; i < 16; i++){
+    	if ((data_len + i) % 16 == 0)
+    	{
+    		return (i == 0) ? 16 : i;
+    	}
+    	else return 0;
+    }
+    return 0;
 }
 
 int length_after_pad(int data_len) {
@@ -614,7 +619,7 @@ uint8_t * aes_cbc_encrypt(uint8_t *pt, int pt_len, uint8_t *key, uint8_t *iv) {
     for (int i = 0; i < 16; i++)
         state[i] = state[i] ^ iv[i];
     // Encrypt the first block with AES
-    char x = aes_encrypt(state, buf, key, 16);
+    char x = aes_encrypt_user(state, buf, key, 16);
     // Enc block and update state
     for (int i = 0; i < 16; i++) {
         ct[i] = buf[i];
@@ -628,8 +633,8 @@ uint8_t * aes_cbc_encrypt(uint8_t *pt, int pt_len, uint8_t *key, uint8_t *iv) {
         for (int i = 0; i < 16; i++)
             state[i] = state[i] ^ pt_pad[block * 16 + i];
         // Encrypt
-        char x = aes_encrypt(state, buf, key, 16);
-        // Enc block and update state
+        char x = aes_encrypt_user(state, buf, key, 16);
+        // Enc block and update stateaes_encrypt
         for (int i = 0; i < 16; i++) {
             ct[block * 16 + i] = buf[i];
             state[i] = buf[i];
@@ -659,7 +664,7 @@ uint8_t * aes_cbc_decrypt(uint8_t *ct, int ct_len, uint8_t *key, uint8_t *iv) {
     for (int i = 0; i < 16; i++) 
         state[i] = ct[i];
     // Decrypt the first block with AES
-    char x = aes_decrypt(state, buf, key, 16);
+    char x = aes_decrypt_user(state, buf, key, 16);
     // Xor with IV
     for (int i = 0; i < 16; i++)
         buf[i] = buf[i] ^ iv[i];
@@ -672,7 +677,7 @@ uint8_t * aes_cbc_decrypt(uint8_t *ct, int ct_len, uint8_t *key, uint8_t *iv) {
     // For subsequent blocks
     for (int block = 1; block < num_block; block++) {
         // Decrypt
-        char x = aes_decrypt(state, buf, key, 16);
+        char x = aes_decrypt_user(state, buf, key, 16);
         // Xor with previous ciphertext block i
         for (int i = 0; i < 16; i++)
             buf[i] = buf[i] ^ ct[(block - 1) * 16 + i];
@@ -749,9 +754,9 @@ void test_aes(int round) {
         // Recovered plaintext
         uint8_t recovered[16];
         // Encrypt the plaintext using AES128
-        aes_encrypt(plaintext, ciphertext, key, 16);
+        aes_encrypt_user(plaintext, ciphertext, key, 16);
         // Decrypt the ciphertext using AES128
-        aes_decrypt(ciphertext, recovered, key, 16);
+        aes_decrypt_user(ciphertext, recovered, key, 16);
         if (!check_two_arrays(plaintext, recovered, 16)) {
             printf("Test failed at testcase %d\n", i + 1);
             return;
@@ -816,7 +821,7 @@ void example_aes128_cbc(uint8_t* plaintext, int plaintext_len) {
     for (int i = 0; i < plaintext_len; i++)
     {
         // Print characters in HEX format, 16 chars per line
-        printf("%c\0", recovered[i]);
+        printf("%c%c", recovered[i], '\0');
     }
     printf("\n");
     return;

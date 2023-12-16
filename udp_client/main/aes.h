@@ -71,7 +71,7 @@ void create_round_key(uint8_t *expanded_key, uint8_t *round_key);
 void aes_main(uint8_t *state, uint8_t *expanded_key, int no_round);
 
 // The main function for encryption
-char aes_encrypt(uint8_t *pt, uint8_t *ct, uint8_t *key, enum keySize size);
+char aes_encrypt_user(uint8_t *pt, uint8_t *ct, uint8_t *key, enum keySize size);
 
 // Supporting function for AES decryption
 
@@ -93,7 +93,7 @@ void aes_inv_round(uint8_t *state, uint8_t *round_key);
 void aes_inv_main(uint8_t *state, uint8_t *expanded_key, int no_round);
 
 // Main function for AES decryption
-char aes_decrypt(uint8_t *ct, uint8_t *pt, uint8_t *key, enum keySize size);
+char aes_decrypt_user(uint8_t *ct, uint8_t *pt, uint8_t *key, enum keySize size);
 
 // Implementation: addRoundKey
 void add_round_key(uint8_t *state, uint8_t *round_key);

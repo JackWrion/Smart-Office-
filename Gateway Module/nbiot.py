@@ -3,7 +3,7 @@ import serial
 import time
 
 PORT = 'COM3'
-VERBOSE = 1
+VERBOSE = 0
 
 
 
