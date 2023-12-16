@@ -33,9 +33,8 @@
 
 
 //#define HOST_IP_ADDR "115.78.92.253"
-#define HOST_IP_ADDR "192.168.82.176"
+#define HOST_IP_ADDR "192.168.56.176"
 #define PORT 9006
-
 
 
 static const char *TAG = "UDP_client: ";
