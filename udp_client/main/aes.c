@@ -557,12 +557,19 @@ void print_block(uint8_t *block, int block_len) {
 
 int calc_pad_ammount_aes128(int data_len) {
     for (int i = 0; i < 16; i++){
+
+
     	if ((data_len + i) % 16 == 0)
     	{
     		return (i == 0) ? 16 : i;
     	}
-    	else return 0;
+
+
+
     }
+
+
+
     return 0;
 }
 

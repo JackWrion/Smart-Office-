@@ -38,8 +38,8 @@
 #define PORT 9006
 
 // Global key and iv
-uint8_t *key = {29, 63, 232, 131, 224, 66, 36, 115, 92, 2, 103, 197, 50, 173, 179, 235};
-uint8_t *iv = {190, 158, 23, 152, 28, 65, 18, 99, 124, 75, 84, 174, 159, 31, 32, 241};
+uint8_t key[16] = {29, 63, 232, 131, 224, 66, 36, 115, 92, 2, 103, 197, 50, 173, 179, 235};
+uint8_t iv[16] = {190, 158, 23, 152, 28, 65, 18, 99, 124, 75, 84, 174, 159, 31, 32, 241};
 
 
 
@@ -117,7 +117,7 @@ static void udp_client_task(void *pvParameters)
 				ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
 				break;
 			}
-            ESP_LOGI(TAG, "Message sent");
+            ESP_LOGI(TAG, "Message sent %d", img_enc_len);
 
 
             esp_camera_fb_return(pic);

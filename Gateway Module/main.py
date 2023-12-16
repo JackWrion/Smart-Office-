@@ -119,6 +119,9 @@ def UDP_handler_nbiot(sock, queue, img_queue, lock, exit_thread, current_member,
             if exit_thread.value:
                 break
         
+        
+        
+        
         try:
             data = nbiotqueue.get()
         except:
