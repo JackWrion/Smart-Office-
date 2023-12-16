@@ -6,6 +6,9 @@ import cv2
 import numpy as np
 from datetime import datetime
 import time
+from secret import key, iv
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
 
 
 # Personal LIB
@@ -68,12 +71,15 @@ def UDP_handler(sock, queue, img_queue, lock, exit_thread, current_member, nbiot
             nbiotqueue.put(jpeg_data)
             continue
         
-        
+        # Decrypt the image
+        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+        img = unpad(cipher.decrypt(jpeg_data), 16)
+
         # Decode the JPEG image
-        frame = cv2.imdecode(np.frombuffer(jpeg_data, dtype=np.uint8), cv2.IMREAD_COLOR)
+        frame = cv2.imdecode(np.frombuffer(img, dtype=np.uint8), cv2.IMREAD_COLOR)
         
         
-        
+  
         # Face Recognition
         face_names , frame = AI_lib.face_recognition_exe(frame)
         
@@ -112,6 +118,9 @@ def UDP_handler_nbiot(sock, queue, img_queue, lock, exit_thread, current_member,
         with lock:
             if exit_thread.value:
                 break
+        
+        
+        
         
         try:
             data = nbiotqueue.get()

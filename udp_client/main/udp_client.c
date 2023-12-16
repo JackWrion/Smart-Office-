@@ -29,12 +29,17 @@
 
 #include "wifi.h"
 #include "camera.h"
+#include "aes.h"
 
 
 
 //#define HOST_IP_ADDR "115.78.92.253"
 #define HOST_IP_ADDR "192.168.56.176"
 #define PORT 9006
+
+// Global key and iv
+uint8_t key[16] = {29, 63, 232, 131, 224, 66, 36, 115, 92, 2, 103, 197, 50, 173, 179, 235};
+uint8_t iv[16] = {190, 158, 23, 152, 28, 65, 18, 99, 124, 75, 84, 174, 159, 31, 32, 241};
 
 
 static const char *TAG = "UDP_client: ";
@@ -101,14 +106,17 @@ static void udp_client_task(void *pvParameters)
             camera_fb_t *pic = esp_camera_fb_get();
             ESP_LOGI(TAG_CAMERA, "Picture taken! Its size was: %zu bytes", pic->len);
 
+            // Encrypt the image
+            uint8_t *img_enc = aes_cbc_encrypt(pic->buf, pic->len, key, iv);
+            int img_enc_len = length_after_pad(pic->len);
 
-
-            int err = sendto(sock, pic->buf, pic->len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+            // Send the encrypted image instead of the original image
+            int err = sendto(sock, img_enc, img_enc_len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
 			if (err < 0) {
 				ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
 				break;
 			}
-            ESP_LOGI(TAG, "Message sent");
+            ESP_LOGI(TAG, "Message sent %d", img_enc_len);
 
 
             esp_camera_fb_return(pic);
@@ -129,6 +137,7 @@ static void udp_client_task(void *pvParameters)
 
 void app_main(void)
 {
+
 	wifi_connect("Vjppro", "1111.1111");
 	while (!WIFI_FLAG){
 		vTaskDelay(pdMS_TO_TICKS(1000));
