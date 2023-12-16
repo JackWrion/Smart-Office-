@@ -38,8 +38,8 @@
 #define PORT 9006
 
 // Global key and iv
-uint8_t *key;
-uint8_t *iv;
+uint8_t *key = {29, 63, 232, 131, 224, 66, 36, 115, 92, 2, 103, 197, 50, 173, 179, 235};
+uint8_t *iv = {190, 158, 23, 152, 28, 65, 18, 99, 124, 75, 84, 174, 159, 31, 32, 241};
 
 
 
@@ -138,27 +138,6 @@ static void udp_client_task(void *pvParameters)
 
 void app_main(void)
 {
-
-    // Init key and IV
-    rand_init();
-    uint8_t* key = random_block(16);
-    uint8_t* iv = random_block(16);
-
-    // Write the key and iv to secret.py Python file
-    FILE *fptr;
-    // Open a file in writing mode
-    fptr = fopen("./../../Gateway Module/secret.py", "w");
-    // Write key
-    fprintf(fptr, "key = bytes.fromhex('");
-    for (int i = 0; i < 16; i++) 
-        fprintf(fptr, "%02x", key[i]);
-    fprintf(fptr, "')\n");
-    // Write iv
-    fprintf(fptr, "iv = bytes.fromhex('");
-    for (int i = 0; i < 16; i++) 
-        fprintf(fptr, "%02x", iv[i]);
-    fprintf(fptr, "')\n");
-    fclose(fptr);
 
 	wifi_connect("Vjppro", "1111.1111");
 	while (!WIFI_FLAG){
